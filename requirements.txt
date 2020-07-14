@@ -1,0 +1,38 @@
+django-allauth
+django-bootstrap4
+django-cryptography
+django-environ
+django-crispy-forms
+django-redis
+django
+psycopg2-binary
+
+# Compressor SASS/JS
+slimit
+django-compressor
+
+# Celery
+celery
+django-celery-beat
+
+# django-storages
+boto3
+django-storages
+
+# Dev requirements
+Werkzeug
+ipython
+django-extensions
+django-debug-toolbar
+ipdb
+ptvsd
+
+# Prod requirements
+newrelic
+sentry-sdk
+uwsgi
+
+# Test requirements
+pytest-cov
+pytest-django
+pytest-sugar

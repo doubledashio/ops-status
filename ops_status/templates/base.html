@@ -1,0 +1,66 @@
+{% load bootstrap4 compress i18n static %}
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}">
+  {% block head %}
+    <head>
+      {% block head.meta %}
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="{% block head.meta.description %}{% endblock head.meta.description %}" />
+        <meta name="keywords" content="{% block head.meta.keywords %}{% endblock head.meta.keywords %}" />
+      {% endblock head.meta %}
+      <link rel="icon" href="{% static 'favicon.ico' %}">
+
+      <title>{% block head.title %}Ops Status{% block head.title.extra %}{% endblock head.title.extra %}{% endblock head.title %}</title>
+
+      {% block head.style %}
+        {% compress css %}
+          <link rel="stylesheet" href="{% static 'ops_status/css/base.css' %}">
+          {% block head.style.extra %}{% endblock head.style.extra %}
+        {% endcompress %}
+      {% endblock head.style %}
+
+      {% block head.js %}
+        {% block head.js.extra %}{% endblock head.js.extra %}
+      {% endblock head.js %}
+    </head>
+  {% endblock head %}
+  {% block body %}
+    <body>
+      <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link {% if request.resolver_match.url_name == "home" %}active{% endif %}" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
+            </li>
+          </ul>
+          {% if user.is_authenticated %}
+          <ul class="navbar-nav dropleft">
+            <li class="dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown">
+                {{ user.username }}
+              </a>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="{% url 'profile' %}">Edit Profile</a>
+                <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+              </div>
+            </li>
+          </ul>
+          {% endif %}
+        </div>
+      </nav>
+      <main role="main" class="container">
+        {% block content %}{% endblock content %}
+      </main><!-- /.container -->
+      {% block footer.js %}
+        {% block footer.js.extra %}{% endblock footer.js.extra %}
+      {% endblock footer.js %}
+    </body>
+  {% endblock body %}
+</html>

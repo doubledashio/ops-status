@@ -1,0 +1,7 @@
+.*
+!.coveragerc
+!.docker
+!.env
+!.pylintrc
+__pycache__
+*.pyc

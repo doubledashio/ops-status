@@ -1,0 +1,51 @@
+version: "3.7"
+
+volumes:
+  pgdata:
+  redisdata:
+  rabbitmqdata:
+
+services:
+  db:
+    image: postgres:alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redisdata:/data
+
+  rabbitmq:
+    image: rabbitmq:alpine
+    volumes:
+      - rabbitmqdata:/var/lib/rabbitmq
+
+  web:
+    build: .
+    image: doubledash/ops_status:develop
+    command: /home/app/.docker/web_local.sh
+    volumes:
+      - ./ops_status:/home/app/ops_status
+    ports:
+      - "5000:5000"
+      - "5678:5678"
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+    env_file: .env
+
+  celery:
+    build: .
+    image: doubledash/ops_status:develop
+    command: /home/app/.docker/celery_local.sh
+    volumes:
+      - ./ops_status:/home/app/ops_status
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
