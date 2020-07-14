@@ -1,6 +1,5 @@
 django-allauth
 django-bootstrap4
-django-cryptography
 django-environ
 django-crispy-forms
 django-redis
