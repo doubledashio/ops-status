@@ -1,10 +1,12 @@
 import json
 import logging
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+import requests
 
 
 logger = logging.getLogger(__name__)
@@ -22,14 +24,14 @@ class GithubWebhookView(View):
         latest_update_created_at = latest_update['created_at']
         latest_update_status = latest_update['status']
 
-        message = f'''  # noqa
+        message = f'''
 Github reported a `{impact}` *incident* at {created_at}, current status is `{status}`.
 
 Latest update provided at {latest_update_created_at} with status `{latest_update_status}`:
 ```
 {latest_update_body}
 ```
-        '''.strip()
+        '''.strip()  # noqa
 
         return message
 
@@ -48,7 +50,10 @@ Component `{component_name}` status updated from `{component_update_old_status}`
         return message
 
     def _send_to_listeners(self, message):
-        print(message)
+        url = settings.SLACK_WEBHOOK_URL
+        response = requests.post(url, json={'text': message})
+        if response.status_code != requests.codes.ok:
+            logging.error(f'Could not send message to Slack: {response.text}')
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
