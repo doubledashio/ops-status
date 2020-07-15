@@ -176,47 +176,37 @@ LOGOUT_REDIRECT_URL = 'login'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '%(levelname)s %(asctime)s %(name)s.%(funcName)s:%(lineno)s - %(message)s'
-        },
-    },
     'handlers': {
         'console': {
-            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
         },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
-            'propagate': True,
+            'level': 'INFO',
         },
         'boto3': {
-            'handlers': ['console'],
             'level': 'CRITICAL',
-            'propagate': True,
         },
         'botocore': {
-            'handlers': ['console'],
             'level': 'CRITICAL',
-            'propagate': True,
         },
         's3transfer': {
-            'handlers': ['console'],
             'level': 'CRITICAL',
-            'propagate': True,
         },
         'requests': {
+            'level': 'WARNING',
+        },
+        'urllib3': {
+            'level': 'WARNING',
+        },
+        'celery': {
             'handlers': ['console'],
             'level': 'WARNING',
-            'propagate': True,
-        },
-        'project': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': True
         }
     }
 }
@@ -254,3 +244,7 @@ COMPRESS_PRECOMPILERS = ()
 # django-crispy-forms
 # ------------------------------------------------------------------------------
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+# Slack
+# ------------------------------------------------------------------------------
+SLACK_WEBHOOK_URL = env('SLACK_WEBHOOK_URL')

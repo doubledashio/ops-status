@@ -10,6 +10,7 @@ admin.site.site_title = 'Ops Status Admin Panel'
 
 urlpatterns = [
     path('', HomeView.as_view(), name='home'),
+    path('', include('apps.ops.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/profile/', ProfileView.as_view(), name='profile'),
     path('admin/', admin.site.urls),
