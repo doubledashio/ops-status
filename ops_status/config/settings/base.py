@@ -216,7 +216,7 @@ LOGGING = {
         'project': {
             'level': 'DEBUG',
             'handlers': ['console'],
-            'propagate': True
+            'propagate': False
         }
     }
 }
