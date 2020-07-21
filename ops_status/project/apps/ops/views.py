@@ -1,13 +1,15 @@
 import json
 import logging
+import requests
+from urllib.parse import urlencode
 
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-import requests
-
 
 logger = logging.getLogger(__name__)
 
@@ -73,3 +75,28 @@ Component `{component_name}` status updated from `{component_update_old_status}`
             self._send_to_listeners(message)
 
         return HttpResponse()
+
+class SlackAuthCodeView(View):
+    def get(self, request, *args, **kwargs):
+        code, state = kwargs
+
+        if not code:
+            return HttpResponseBadRequest('Providing `code` argument is required.')
+
+        if state and state != 'authorize':
+            return HttpResponseBadRequest('Argument `state` has unexpected value.')
+
+        return HttpResponse()
+
+def redirect_slack_authorize(request):
+    params = {
+        'client_id': settings.SLACK_CLIENT_ID,
+        'scope': '',
+        'redirect_uri': reverse('SlackAuthCodeView'),
+        # 'scope': 'authorize',
+        # #TODO: Get team ID from signed-in Slack workspaces
+        # 'team': 'T99LNBV5W',
+    }
+    url = '{}?{}'.format(settings.SLACK_OAUTH_URL, urlencode(params))
+    response = redirect(url)
+    return response
