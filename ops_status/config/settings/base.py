@@ -247,4 +247,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Slack
 # ------------------------------------------------------------------------------
+SLACK_CLIENT_ID = env('SLACK_CLIENT_ID')
+SLACK_CLIENT_SECRET = env('SLACK_CLIENT_SECRET')
+SLACK_OAUTH_URL = env('SLACK_OAUTH_URL')
 SLACK_WEBHOOK_URL = env('SLACK_WEBHOOK_URL')
