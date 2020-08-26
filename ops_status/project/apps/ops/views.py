@@ -86,16 +86,16 @@ class SlackAuthCodeView(View):
         if state and state != 'authorize':
             return HttpResponseBadRequest('Argument `state` has unexpected value.')
 
+        # exchange code for token
+
         return HttpResponse()
 
 def redirect_slack_authorize(request):
     params = {
         'client_id': settings.SLACK_CLIENT_ID,
-        'scope': '',
+        'scope': 'incoming-webhook',
         'redirect_uri': reverse('SlackAuthCodeView'),
-        # 'scope': 'authorize',
-        # #TODO: Get team ID from signed-in Slack workspaces
-        # 'team': 'T99LNBV5W',
+        'state': 'authorize',
     }
     url = '{}?{}'.format(settings.SLACK_OAUTH_URL, urlencode(params))
     response = redirect(url)
