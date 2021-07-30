@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'compressor',
     'crispy_forms',
-    'django_celery_beat',
+    'django_q',
     'storages',
     # Apps
     'ops',
@@ -150,8 +150,9 @@ STATICFILES_FINDERS = [
 
 # Cache
 # ------------------------------------------------------------------------------
-REDIS_LOCATION = '{0}/{1}'.format(env('REDIS_URL',
-                                      default='redis://redis:6379'), env('REDIS_DB', default=0))
+REDIS_URL = env('REDIS_URL', default='redis://redis:6379')
+REDIS_LOCATION = '{0}/{1}'.format(REDIS_URL, env('REDIS_DB', default=0))
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -204,21 +205,24 @@ LOGGING = {
         'urllib3': {
             'level': 'WARNING',
         },
-        'celery': {
+        'slack_bolt': {
             'handlers': ['console'],
             'level': 'WARNING',
-        }
+            'propagate': False,
+        },
     }
 }
 
-# celery
+# django-q
 # ------------------------------------------------------------------------------
-BROKER_URL = env('CLOUDAMQP_URL', default='amqp://guest:guest@rabbitmq:5672')
-CELERY_ACCEPT_CONTENT = ['application/json']
-CELERY_BROKER_URL = BROKER_URL
-CELERY_TASK_SERIALIZER = 'json'
-CELERYBEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-CELERYD_MAX_TASKS_PER_CHILD = 50
+Q_CLUSTER = {
+    'cpu_affinity': 1,
+    'django_redis': 'default',
+    'label': 'Django Q',
+    'name': 'ops_status',
+    'retry': 60,
+    'timeout': 30,
+}
 
 # django-storages
 # ------------------------------------------------------------------------------
@@ -247,8 +251,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Slack
 # ------------------------------------------------------------------------------
-SLACK_BOT_TOKEN = env('SLACK_BOT_TOKEN')
 SLACK_CLIENT_ID = env('SLACK_CLIENT_ID')
 SLACK_CLIENT_SECRET = env('SLACK_CLIENT_SECRET')
-SLACK_OAUTH_URL = env('SLACK_OAUTH_URL')
-SLACK_WEBHOOK_URL = env('SLACK_WEBHOOK_URL')
+SLACK_SIGNING_SECRET = env('SLACK_SIGNING_SECRET')
+SLACK_SCOPES = env('SLACK_SCOPES')

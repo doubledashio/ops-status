@@ -3,7 +3,6 @@ version: "3.7"
 volumes:
   pgdata:
   redisdata:
-  rabbitmqdata:
 
 services:
   db:
@@ -18,11 +17,6 @@ services:
     volumes:
       - redisdata:/data
 
-  rabbitmq:
-    image: rabbitmq:alpine
-    volumes:
-      - rabbitmqdata:/var/lib/rabbitmq
-
   web:
     build: .
     image: doubledash/ops_status:develop
@@ -35,17 +29,15 @@ services:
     depends_on:
       - db
       - redis
-      - rabbitmq
     env_file: .env
 
-  celery:
+  q:
     build: .
     image: doubledash/ops_status:develop
-    command: /home/app/.docker/celery_local.sh
+    command: /home/app/.docker/q_local.sh
     volumes:
       - ./ops_status:/home/app/ops_status
     env_file: .env
     depends_on:
       - db
       - redis
-      - rabbitmq

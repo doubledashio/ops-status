@@ -4,14 +4,19 @@ import requests
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
+from slack_bolt.adapter.django import SlackRequestHandler
+
+from ops.slack import app
+
 logger = logging.getLogger(__name__)
+handler = SlackRequestHandler(app=app)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -76,27 +81,38 @@ Component `{component_name}` status updated from `{component_update_old_status}`
 
         return HttpResponse()
 
-class SlackAuthCodeView(View):
-    def get(self, request, *args, **kwargs):
-        code, state = kwargs
 
-        if not code:
-            return HttpResponseBadRequest('Providing `code` argument is required.')
+# class SlackAuthCodeView(View):
+#     def get(self, request, *args, **kwargs):
+#         code, state = kwargs
 
-        if state and state != 'authorize':
-            return HttpResponseBadRequest('Argument `state` has unexpected value.')
+#         if not code:
+#             return HttpResponseBadRequest('Providing `code` argument is required.')
 
-        # exchange code for token
+#         if state and state != 'authorize':
+#             return HttpResponseBadRequest('Argument `state` has unexpected value.')
 
-        return HttpResponse()
+#         # exchange code for token
 
-def redirect_slack_authorize(request):
-    params = {
-        'client_id': settings.SLACK_CLIENT_ID,
-        'scope': 'incoming-webhook',
-        'redirect_uri': reverse('SlackAuthCodeView'),
-        'state': 'authorize',
-    }
-    url = '{}?{}'.format(settings.SLACK_OAUTH_URL, urlencode(params))
-    response = redirect(url)
-    return response
+#         return HttpResponse()
+
+
+# def redirect_slack_authorize(request):
+#     params = {
+#         'client_id': settings.SLACK_CLIENT_ID,
+#         'scope': 'incoming-webhook',
+#         'redirect_uri': reverse('SlackAuthCodeView'),
+#         'state': 'authorize',
+#     }
+#     url = '{}?{}'.format(settings.SLACK_OAUTH_URL, urlencode(params))
+#     response = redirect(url)
+#     return response
+
+
+@csrf_exempt
+def slack_events_handler(request: HttpRequest):
+    return handler.handle(request)
+
+
+def slack_oauth_handler(request: HttpRequest):
+    return handler.handle(request)

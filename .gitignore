@@ -76,12 +76,5 @@ node_modules/
 # User-uploaded media
 www/static/CACHE/
 
-
-# Vagrant
-.vagrant
-Vagrantfile
-
-celerybeat.pid
-
 *.json
 !app.json
