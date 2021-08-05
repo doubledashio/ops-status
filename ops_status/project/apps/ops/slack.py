@@ -16,7 +16,7 @@ from slack_sdk.oauth.installation_store import Bot, Installation
 from slack_sdk.webhook import WebhookClient
 
 # Database models
-from ops.models import SlackBot, SlackInstallation, SlackOAuthState
+from ops.models import SlackBot, SlackInstallation, SlackOAuthState, SlackBotChannel
 
 
 class DjangoInstallationStore(InstallationStore):
@@ -229,33 +229,54 @@ app = App(
     ),
 )
 
+@app.event("message")
+def handle_message_events(logger, event):
+    logger.info(f'Message was received')
+    logger.info(event)
 
-def event_test(body, say, context: BoltContext, logger):
-    logger.info(body)
-    say(":wave: What's up?")
+@app.event("app_uninstalled")
+def handle_app_uninstalled_events(logger, body):
+    """
+    Handle event fired when the app is uninstalled from a workspace. In our case, we'll toggle a flag on the bot model
+    to set it inactive, but keeping the data.
+    """
+    if 'team_id' not in body:
+        logger.error('app_uninstalled event: missing values')
+        return
 
-    found_rows = list(
-        SlackInstallation.objects.filter(enterprise_id=context.enterprise_id)
-        .filter(team_id=context.team_id)
-        .filter(incoming_webhook_url__isnull=False)
-        .order_by(F("installed_at").desc())[:1]
-    )
-    if len(found_rows) > 0:
-        webhook_url = found_rows[0].incoming_webhook_url
-        logger.info(f"webhook_url: {webhook_url}")
-        client = WebhookClient(webhook_url)
-        client.send(text=":wave: This is a message posted using Incoming Webhook!")
+    team_id = body['team_id']
 
+    bot = SlackBot.objects.filter(team_id=team_id, is_active=True).first()
 
-# lazy listener example
-def noop():
-    pass
+    if not bot:
+        logger.error(f'app_uninstalled event: bot not found for team {team_id}')
+        return
 
+    bot.is_active = False
+    bot.save()
 
-app.event("app_mention")(
-    ack=event_test,
-    lazy=[noop],
-)
+@app.event("member_joined_channel")
+def handle_message_events(logger, body):
+    """
+    Handle event fired when a user joins a channel. In our case, we'll add the channel to the list of channels we need
+    to send the notifications.
+    """
+    if 'team_id' not in body or 'event' not in body or 'user' not in body['event'] or 'channel' not in body['event']:
+        logger.error('member_joined_channel event: missing values')
+        return
+
+    team_id = body['team_id']
+    event = body['event']
+    bot_user_id = event['user']
+    channel_id = event['channel']
+
+    bot = SlackBot.objects.filter(team_id=team_id, bot_user_id=bot_user_id, is_active=True).first()
+
+    if not bot:
+        logger.error(f'member_joined_channel event: bot not found for team {team_id} and id {bot_user_id}')
+        return
+
+    SlackBotChannel.objects.get_or_create(bot=bot, channel_id=channel_id)
 
 
 @app.command("/hello-django-app")

@@ -16,6 +16,7 @@ class SlackBot(models.Model):
     bot_scopes = models.TextField(null=True)
     is_enterprise_install = models.BooleanField(null=True)
     installed_at = models.DateTimeField(null=False)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         indexes = [
@@ -23,6 +24,9 @@ class SlackBot(models.Model):
                 fields=['client_id', 'enterprise_id', 'team_id', 'installed_at']
             ),
         ]
+
+    def __str__(self):
+        return f'SlackBot for {self.team_name}'
 
 
 class SlackInstallation(models.Model):
@@ -65,7 +69,19 @@ class SlackInstallation(models.Model):
             ),
         ]
 
+    def __str__(self):
+        return f'SlackInstallation for {self.team_name}'
+
 
 class SlackOAuthState(models.Model):
     state = models.CharField(null=False, max_length=64)
     expire_at = models.DateTimeField(null=False)
+
+
+class SlackBotChannel(models.Model):
+    bot = models.ForeignKey(SlackBot, related_name='channels', on_delete=models.CASCADE)
+
+    channel_id = models.CharField(max_length=32)
+
+    def __str__(self):
+        return f'SlackBotChannel for {self.channel_id}'

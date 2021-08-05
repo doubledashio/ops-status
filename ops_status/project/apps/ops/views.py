@@ -1,23 +1,15 @@
 import json
-import logging
-import requests
-from urllib.parse import urlencode
 
-from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
-from django.shortcuts import redirect
-from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-
-from slack_bolt.adapter.django import SlackRequestHandler
-
+from ops.models import SlackBotChannel
 from ops.slack import app
+from slack_bolt.adapter.django import SlackRequestHandler
+from slack_sdk.web import WebClient
 
-logger = logging.getLogger(__name__)
 handler = SlackRequestHandler(app=app)
-
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GithubWebhookView(View):
@@ -57,10 +49,11 @@ Component `{component_name}` status updated from `{component_update_old_status}`
         return message
 
     def _send_to_listeners(self, message):
-        url = settings.SLACK_WEBHOOK_URL
-        response = requests.post(url, json={'text': message})
-        if response.status_code != requests.codes.ok:
-            logging.error(f'Could not send message to Slack: {response.text}')
+        channels = SlackBotChannel.objects.select_related('bot').filter(bot__is_active=True)
+
+        for channel in channels:
+            client = WebClient(token=channel.bot.bot_token)
+            client.chat_postMessage(channel=channel.channel_id, text=message)
 
     def post(self, request, *args, **kwargs):
         data = json.loads(request.body)
@@ -80,33 +73,6 @@ Component `{component_name}` status updated from `{component_update_old_status}`
             self._send_to_listeners(message)
 
         return HttpResponse()
-
-
-# class SlackAuthCodeView(View):
-#     def get(self, request, *args, **kwargs):
-#         code, state = kwargs
-
-#         if not code:
-#             return HttpResponseBadRequest('Providing `code` argument is required.')
-
-#         if state and state != 'authorize':
-#             return HttpResponseBadRequest('Argument `state` has unexpected value.')
-
-#         # exchange code for token
-
-#         return HttpResponse()
-
-
-# def redirect_slack_authorize(request):
-#     params = {
-#         'client_id': settings.SLACK_CLIENT_ID,
-#         'scope': 'incoming-webhook',
-#         'redirect_uri': reverse('SlackAuthCodeView'),
-#         'state': 'authorize',
-#     }
-#     url = '{}?{}'.format(settings.SLACK_OAUTH_URL, urlencode(params))
-#     response = redirect(url)
-#     return response
 
 
 @csrf_exempt
