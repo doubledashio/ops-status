@@ -26,6 +26,18 @@ SESSION_COOKIE_AGE = 10800  # 3 hours
 # ------------------------------------------------------------------------------
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
+# django-q
+# ------------------------------------------------------------------------------
+Q_CLUSTER = {
+    'cpu_affinity': 1,
+    'django_redis': 'default',
+    'label': 'Django Q',
+    'name': 'ops_status',
+    'save_limit': -1,
+    'timeout': 30,
+    'workers': 4,
+}
+
 # django-storages
 # ------------------------------------------------------------------------------
 AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')  # noqa

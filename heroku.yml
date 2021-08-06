@@ -5,7 +5,7 @@ run:
   web: /home/app/.docker/web.sh
   worker:
     command:
-    - /home/app/.docker/celery.sh
+    - /home/app/.docker/q.sh
     image: web
 release:
   image: web

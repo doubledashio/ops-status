@@ -10,13 +10,15 @@ psycopg2-binary
 slimit
 django-compressor
 
-# Celery
-celery
-django-celery-beat
+# Q
+django-q
 
-# django-storages
+# Static and Media storage
 boto3
 django-storages
+
+# Slack
+slack-bolt>=1.7,<2
 
 # Dev requirements
 Werkzeug
