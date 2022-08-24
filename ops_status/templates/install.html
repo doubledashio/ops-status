@@ -3,11 +3,13 @@
 {% block content %}
   <div class="starter-template">
     <h1>Ops Status</h1>
-    <p class="lead">
-      v{{ current_version }}
+    <p>
+      Track the status of your favorite tools,
     </p>
     <p>
       <a href="https://slack.com/oauth/v2/authorize?scope={{scope}}&client_id={{client_id}}&redirect_uri={{redirect_uri}}">Install Ops-status</a> on Slack!
+      <br />
+      <span style="font-size: small">Current version: v{{ current_version }}</span>
     </p>
   </div>
 {% endblock content %}

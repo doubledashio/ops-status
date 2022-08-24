@@ -6,6 +6,9 @@ django-redis
 django
 psycopg2-binary
 
+# API requests
+requests
+
 # Compressor SASS/JS
 slimit
 django-compressor

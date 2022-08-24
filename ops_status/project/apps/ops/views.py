@@ -1,12 +1,17 @@
 import json
 from datetime import datetime, timedelta
 
+from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
+from django.urls import resolve, reverse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic.base import TemplateView
 from ops.models import SlackBotChannel
 from ops.slack import app
+import requests
 from slack_bolt.adapter.django import SlackRequestHandler
 from slack_sdk.web import WebClient
 
@@ -107,5 +112,60 @@ def slack_events_handler(request: HttpRequest):
     return handler.handle(request)
 
 
-def slack_oauth_handler(request: HttpRequest):
-    return handler.handle(request)
+@method_decorator(csrf_exempt, name='dispatch')
+class SlackOAuthView(TemplateView):
+    template_name = 'install.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        redirect_uri = self.request.build_absolute_uri(reverse('ops:oauth_redirect'))
+
+        # Slack requires a SSL address.
+        # even under SSL ngrok, request.build_absolute_uri() builds with HTTP. address this here
+        if settings.DEBUG:
+            redirect_uri=redirect_uri.replace('http://', 'https://', 1)
+
+        context.update({
+            'scope': settings.SLACK_SCOPES,
+            'client_id': settings.SLACK_CLIENT_ID,
+            'redirect_uri': redirect_uri
+            # TODO - optional but more secure: Add `state` - any value unique to the user/session
+        })
+
+        #---
+
+        current_url = resolve(self.request.path_info).url_name
+        code = self.request.GET.get('code')
+
+        if current_url == 'oauth_redirect' and code:
+            params = {
+                'code': code,
+                'client_id': settings.SLACK_CLIENT_ID,
+                'client_secret': settings.SLACK_CLIENT_SECRET,
+                'redirect_uri': redirect_uri
+            }
+            r = requests.get('https://slack.com/api/oauth.v2.access', params=params)
+            r.raise_for_status()
+
+            if (settings.DEBUG):
+                print(r.url)
+                print(r.text)
+
+            data = r.json()
+
+            if (not data.get('ok') or data.get('ok') == 'false' or not data.get('access_token')):
+                raise PermissionDenied('Could not obtain access! (Reason: {0})'.format(data.get('error')))
+
+            if (settings.DEBUG):
+                print(data.get('access_token'))
+
+            # save token response
+
+
+            # show success
+            context.update({
+                'slack_workspace': data.get('team').get('name')
+            })
+            self.template_name='oauth_success.html'
+
+        return context
