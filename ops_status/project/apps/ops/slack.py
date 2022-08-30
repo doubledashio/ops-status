@@ -5,6 +5,7 @@ from typing import Optional
 from uuid import uuid4
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.db.models import F
 from django.utils import timezone
 from django.utils.timezone import is_naive, make_aware
@@ -216,6 +217,7 @@ app = App(
         client_id=client_id,
         client_secret=client_secret,
         scopes=scopes,
+        redirect_uri='https://{0}/oauth_redirect'.format(Site.objects.get_current().domain),
         # If you want to test token rotation, enabling the following line will make it easy
         # token_rotation_expiration_minutes=1000000,
         installation_store=DjangoInstallationStore(
