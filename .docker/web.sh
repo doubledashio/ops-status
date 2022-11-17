@@ -9,4 +9,4 @@ POSTGRES="tcp://${DB}"
 
 dockerize -wait "${REDIS}" -wait "${POSTGRES}"
 
-NEW_RELIC_APP_NAME=web newrelic-admin run-program uwsgi --ini /home/app/.docker/uwsgi.ini
+uwsgi --ini /home/app/.docker/uwsgi.ini

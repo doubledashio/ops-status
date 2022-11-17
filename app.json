@@ -1,47 +1,7 @@
 {
-    "name": "Ops Status",
-    "description": "An app to fetch tool statuses and output them to Slack",
-    "repository": "https://github.com/doubledashio/ops-status",
-    "keywords": ["python", "django", "celery", "api", "slack"],
-    "env": {
-        "DJANGO_SECRET_KEY": {
-            "description": "Randomly generated secret to secure Django installation",
-            "generator": "secret"
-        },
-        "DJANGO_SETTINGS_MODULE": {
-            "description": "Django settings module",
-            "value": "config.settings.staging"
-        },
-        "AWS_BUCKET_NAME": {
-            "description": "AWS S3 Bucket Name",
-            "value": "doubledash-ops-status"
-        },
-        "AWS_LOCATION": {
-            "description": "AWS S3 Bucket Path",
-            "value": "staging"
-        }
-    },
-    "stack": "container",
-    "formation": {
-        "web": {
-            "quantity": 1,
-            "size": "hobby"
-        },
-        "worker": {
-            "quantity": 1,
-            "size": "hobby"
-        }
-    },
-    "addons": [
-        "heroku-postgresql:hobby-dev",
-        "heroku-redis:hobby-dev",
-        "cloudamqp:lemur"
-    ],
-    "environments": {
-        "review": {
-            "scripts": {
-                "postdeploy": "echo \"from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('app', 'app@app.com', 'app')\" | python manage.py shell"
-            }
+    "scripts": {
+        "dokku": {
+            "postdeploy": "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py compress"
         }
     }
 }
