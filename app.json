@@ -1,7 +1,0 @@
-{
-    "scripts": {
-        "dokku": {
-            "postdeploy": "python manage.py migrate && python manage.py collectstatic --noinput && python manage.py compress"
-        }
-    }
-}
