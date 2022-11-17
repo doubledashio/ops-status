@@ -7,15 +7,15 @@ COPY ./requirements.txt /
 
 RUN apt-get update && \
     apt-get install -y  --no-install-recommends \
-        file \
-        gcc \
-        g++ \
-        wget && \
+    file \
+    gcc \
+    g++ \
+    wget && \
     pip install --upgrade --no-cache-dir \
-        pip \
-        setuptools && \
+    pip \
+    setuptools && \
     pip install --no-cache-dir \
-        -r /requirements.txt && \
+    -r /requirements.txt && \
     rm -rf /tmp/* /var/lib/apt/lists/* /var/cache/apt/* && \
     apt-get purge -y --auto-remove gcc g++
 

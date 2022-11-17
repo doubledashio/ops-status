@@ -29,7 +29,6 @@ ipdb
 ptvsd
 
 # Prod requirements
-newrelic
 sentry-sdk
 uwsgi
 
