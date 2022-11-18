@@ -6,10 +6,6 @@ django-redis
 django
 psycopg2-binary
 
-# Compressor SASS/JS
-slimit
-django-compressor
-
 # Q
 django-q
 
